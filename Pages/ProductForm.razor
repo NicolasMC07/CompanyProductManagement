@@ -1,0 +1,62 @@
+@page "/products/add/{companyId:int}"
+@page "/products/edit/{id:int}"
+@using CompanyProductManagement.Models
+@using CompanyProductManagement.Services
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<h3>@(id == 0 ? "Add New Product" : "Edit Product")</h3>
+
+<EditForm Model="@product" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Product Name:</label>
+        <InputText id="name" @bind-Value="product.Name" class="form-control" />
+        <ValidationMessage For="@(() => product.Name)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    [Parameter]
+    public int companyId { get; set; }
+
+    private Product product = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (id != 0)
+        {
+            product = await ProductService.GetProduct(id);
+        }
+        else
+        {
+            product.CompanyId = companyId;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (id == 0)
+        {
+            await ProductService.CreateProduct(companyId, product);
+        }
+        else
+        {
+            await ProductService.UpdateProduct(id, product);
+        }
+        Navigation.NavigateTo($"/products/{product.CompanyId}");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo($"/products/{product.CompanyId}");
+    }
+}

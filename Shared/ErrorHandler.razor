@@ -1,0 +1,34 @@
+@using System.Diagnostics
+@inject NavigationManager Navigation
+
+@if (showError)
+{
+    <div class="alert alert-danger">
+        <h4>Error</h4>
+        <p>@errorMessage</p>
+        <button class="btn btn-primary" @onclick="NavigateToHome">Go to Home</button>
+    </div>
+}
+
+@ChildContent
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; } // Hacer nullable
+
+    private bool showError = false;
+    private string errorMessage = string.Empty;
+
+    public void HandleError(Exception ex)
+    {
+        errorMessage = ex.Message;
+        showError = true;
+        StateHasChanged();
+    }
+
+    private void NavigateToHome()
+    {
+        showError = false;
+        Navigation.NavigateTo("/");
+    }
+}

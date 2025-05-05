@@ -1,0 +1,58 @@
+@page "/products"
+@using CompanyProductManagement.Models
+@using CompanyProductManagement.Services
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<h3>All Products</h3>
+
+@if (products == null)
+{
+    <p>Loading...</p>
+}
+else if (!products.Any())
+{
+    <div class="alert alert-warning">No products found</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                    <td>@product.Company?.Name</td>
+                    <td>
+                        <button class="btn btn-info" @onclick="@(() => Navigation.NavigateTo(string.Format("/products/edit/{0}", product.Id)))">Edit</button>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteProduct(product.Id))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Product> products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductService.GetAllProducts();
+    }
+
+    private async Task DeleteProduct(int id)
+    {
+        await ProductService.DeleteProduct(id);
+        products = await ProductService.GetAllProducts();
+    }
+}
